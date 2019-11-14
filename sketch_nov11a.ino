@@ -81,16 +81,16 @@ void Add_user(){
     for(int i = 2;i<(len*4)+2;i+=4){
       if(uid == EEPROM_read(i)){
         copy=1;
+        Error();
         break;
       }
-      if(!copy){
-        EEPROM.write(1,len);
-        EEPROM_write((len*4)-2,uid);
-      }
-      else Error();
     }
-  delay(300);
+  if(!copy){
+    EEPROM.write(1,len);
+    EEPROM_write((len*4)-2,uid);
   }
+  delay(300);
+}
 
 void Root_mode(){
   tone(speaker,2000,5000);
@@ -108,7 +108,7 @@ void Root_mode(){
     if (mfrc522.PICC_IsNewCardPresent())Add_user();
     if(!digitalRead(in_button)){
       tone(speaker,2000,2000);
-      Serial.println("Remote user!!!");
+      Serial.println("Remove user!!!");
       Remove_last_user();
     }
   }
@@ -122,19 +122,15 @@ void Change_door(){
     digitalWrite(SERVO_power,HIGH);
     myservo.write(servo_open);
     delay(1000);
-    if(myservo.read()==servo_open)EEPROM.write(0,1);
-      else Error();
     digitalWrite(SERVO_power,LOW);
   }
     else{
       Serial.println("closed");
       digitalWrite(SERVO_power,HIGH);
-      digitalWrite(lock_state_diod_open,LOW);
-      digitalWrite(lock_state_diod_close,HIGH);
+      digitalWrite(lock_state_diod_open,HIGH);
+      digitalWrite(lock_state_diod_close,LOW);
       myservo.write(servo_close);
       delay(1000);
-      if(myservo.read()==servo_close)EEPROM.write(0,0);
-        else Error();
       digitalWrite(SERVO_power,LOW);
       }
     door=!door;
@@ -160,9 +156,14 @@ void setup() {
     digitalWrite(4,LOW);
   Serial.begin(115200);
   SPI.begin();      
-  mfrc522.PCD_Init(); 
+  mfrc522.PCD_Init();
   myservo.attach(SERVO_PIN);
   Serial.println("Start");
+  if(myservo.read()==servo_open){
+    door=1;
+  }else{
+    door=0;
+  }
   if(!digitalRead(root_btn)) Root_mode();
   for(int i = 2;i<(EEPROM.read(1)*4-1);i+=4)
     {
@@ -171,8 +172,6 @@ void setup() {
   Serial.print("Keys are loaded: ");
   Serial.println(EEPROM.read(1));
   for(int i=0;i<keys.size();i++)Serial.println(keys[i]);
-  door=1;
-  if(EEPROM.read(0))door=0;
   Change_door();
 }
 
@@ -189,11 +188,12 @@ void loop(){
       }else fail_key=1;  
   }
 if(fail_key){
-  tone(speaker,2000,50);
-  delay(100);
-  tone(speaker,2000,50);
-  delay(100);
-  tone(speaker,2000,50);
+  //tone(speaker,2000,50);
+  //delay(100);
+  //tone(speaker,2000,50);
+  //delay(100);
+  //tone(speaker,2000,50);
+  Error();
   }
 }
 if(!digitalRead(in_button)&&digitalRead(tail))Change_door();
