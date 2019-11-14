@@ -118,6 +118,7 @@ void Change_door(){
   if(door){
     Serial.println("open");
     digitalWrite(lock_state_diod_open,LOW);
+    digitalWrite(lock_state_diod_close,HIGH);
     digitalWrite(SERVO_power,HIGH);
     myservo.write(servo_open);
     delay(1000);
@@ -128,6 +129,7 @@ void Change_door(){
     else{
       Serial.println("closed");
       digitalWrite(SERVO_power,HIGH);
+      digitalWrite(lock_state_diod_open,LOW);
       digitalWrite(lock_state_diod_close,HIGH);
       myservo.write(servo_close);
       delay(1000);
